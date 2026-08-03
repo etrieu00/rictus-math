@@ -2,14 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
-import {
-  CdkDrag,
-  CdkDragDrop,
-  CdkDropList,
-  CdkDropListGroup,
-  moveItemInArray,
-  transferArrayItem,
-} from '@angular/cdk/drag-drop';
+import { CdkDrag, CdkDragDrop, CdkDropList, CdkDropListGroup, transferArrayItem } from '@angular/cdk/drag-drop';
 
 export interface Tab {
   id: string;
@@ -220,7 +213,7 @@ export class App {
       image: 'https://api.gatcg.com/cards/images/enchanted-fete-dtr.jpg',
       name: '',
       cost: 4,
-    }
+    },
   ]);
 
   $Tab = signal<Tab>(this.tabs[1]);
@@ -237,28 +230,16 @@ export class App {
   }
 
   onDrop($event: CdkDragDrop<Card[]>) {
-    if ($event.previousContainer === $event.container) {
-      const updatedList = [...$event.container.data];
-      moveItemInArray(updatedList, $event.previousIndex, $event.currentIndex);
-      if ($event.container.id === 'revealed') {
-        this.$Revealed.set(updatedList);
-      } else {
-        this.$Unknown.update((currentItems) => {
-          const updatedItems = [...currentItems];
-          moveItemInArray(updatedItems, $event.previousIndex, $event.currentIndex);
-          return updatedItems;
-        });
-      }
-    } else {
+    if ($event.previousContainer.id !== $event.container.id) {
       const sourceList = [...$event.previousContainer.data];
       const targetList = [...$event.container.data];
       transferArrayItem(sourceList, targetList, $event.previousIndex, $event.currentIndex);
       if ($event.previousContainer.id === 'revealed') {
         this.$Revealed.set(sourceList);
-        this.$Unknown.set(targetList);
+        this.$Unknown.set(this.shuffle(targetList));
       } else {
         this.$Revealed.set(targetList);
-        this.$Unknown.set(sourceList);
+        this.$Unknown.set(this.shuffle(sourceList));
       }
     }
   }
